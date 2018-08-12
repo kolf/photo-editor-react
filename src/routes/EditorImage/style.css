@@ -1,0 +1,47 @@
+.upload-image-root {
+  position: absolute;
+  bottom: 2rem;
+  background: #222;
+  width: 100%;
+}
+
+.upload-box {
+  display: flex;
+}
+
+.upload-btn {
+  width: 4rem;
+  height: 4rem;
+  padding: 0.4rem;
+  position: relative;
+}
+
+.upload-btn > input {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 4rem;
+  height: 4rem;
+  opacity: 0.01;
+}
+
+.upload-list {
+  flex: 1;
+  height: 4rem;
+  overflow-x: scroll;
+}
+
+.upload-list ul {
+  padding: 0.2rem 0;
+  overflow: hidden;
+  margin-left: -0.1rem;
+}
+
+.upload-list li {
+  float: left;
+  width: 3.4rem;
+  height: 3.4rem;
+  overflow: hidden;
+  background: #000;
+  margin: 0.1rem;
+}
