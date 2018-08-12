@@ -44,7 +44,7 @@ const colors = [
   "000000"
 ].map(c => "#" + c);
 
-const fontFamilys = ["font1", "font2", "font3", "font4", "font5"];
+const fontFamilys = ["font1", "font2", "font3", "font4", "font6", "font5"];
 
 const Colors = ({ onChange, value }) => {
   return (
@@ -174,7 +174,7 @@ class EditorText extends Component {
         ...texts,
         {
           fill: colors[0],
-          // fontFamily,
+          fontFamily: fontFamilys[0],
           text: "快来开启金魔方魔幻路程吧",
           name: "text_" + Date.now()
         }
@@ -206,8 +206,13 @@ class EditorText extends Component {
     const name = e.target.name();
     const t = this.state.texts.find(i => i.name === name);
     if (t) {
+      console.log(t);
+      // const { fontFamily, fill, text } = t;
       this.setState({
-        activeKey: name
+        activeKey: name,
+        // color: fill,
+        // fontFamily,
+        // text
       });
     } else {
       this.setState({
@@ -254,7 +259,7 @@ class EditorText extends Component {
               {texts.map((text, index) => (
                 <Cropper.Text
                   {...text}
-                  fontSize={20}
+                  fontSize={24}
                   key={text.name + index}
                   draggable={true}
                 />
