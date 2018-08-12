@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import { getQueryString } from "../../utils";
 import Footer from "../../components/Footer";
+import Cropper from "../../components/Cropper";
+import addTextUrl from "../../assets/addText.png";
 import "./style.css";
 
 const colors = [
@@ -40,19 +42,9 @@ const colors = [
   "666666",
   "333333",
   "000000"
-];
+].map(c => "#" + c);
 
-const texts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-
-const Stage = ({ imgUrl }) => {
-  return (
-    <div className="body" style={s.body}>
-      <div className="stage">
-        <img className="origin js-result" src={imgUrl} alt="Kolf" />
-      </div>
-    </div>
-  );
-};
+const fontFamilys = ["font1", "font2", "font3", "font4", "font5"];
 
 const Colors = ({ onChange, value }) => {
   return (
@@ -63,7 +55,7 @@ const Colors = ({ onChange, value }) => {
             key={c}
             onClick={e => onChange(c)}
             className={value === c ? "active" : null}
-            style={{ background: "#" + c }}
+            style={{ background: c }}
           />
         ))}
       </ul>
@@ -74,10 +66,16 @@ const Colors = ({ onChange, value }) => {
 const Texts = ({ onChange, value }) => {
   return (
     <div className="texts">
-      <ul className="clearfix" style={{ width: texts.length * 3 + "rem" }}>
-        {texts.map((c, index) => (
+      <ul
+        className="clearfix"
+        style={{ width: fontFamilys.length * 3 + "rem" }}
+      >
+        {fontFamilys.map((c, index) => (
           <li
             key={index + c}
+            style={{
+              fontFamily: c
+            }}
             onClick={e => onChange(c)}
             className={value === c ? "active" : null}
           >
@@ -89,10 +87,11 @@ const Texts = ({ onChange, value }) => {
   );
 };
 
-const Input = ({ onChange }) => {
+const Input = ({ onChange, value }) => {
   return (
     <div className="input">
       <input
+        value={value}
         onChange={e => onChange(e.target.value)}
         placeholder="点击输入文字"
       />
@@ -104,26 +103,46 @@ class EditorText extends Component {
   state = {
     resultUrl: "",
     color: "",
-    fontFamliay: "",
+    fontFamily: "",
+    texts: [],
     text: ""
   };
 
   componentWillMount() {
+    this.pushText();
     this.setState({
       resultUrl: getQueryString("imgUrl")
     });
   }
 
   changeColor = color => {
+    const activeIndex = this.findActiveIndex();
+    if (activeIndex !== -1) {
+      this.updateText(activeIndex, {
+        fill: color
+      });
+    }
     this.setState({ color });
   };
 
   changeText = text => {
+    const activeIndex = this.findActiveIndex();
+    if (activeIndex !== -1) {
+      this.updateText(activeIndex, {
+        text
+      });
+    }
     this.setState({ text });
   };
 
-  changeFontFamliay = fontFamliay => {
-    this.setState({ fontFamliay });
+  changefontFamily = fontFamily => {
+    const activeIndex = this.findActiveIndex();
+    if (activeIndex !== -1) {
+      this.updateText(activeIndex, {
+        fontFamily
+      });
+    }
+    this.setState({ fontFamily });
   };
 
   goTo = path => {
@@ -133,7 +152,7 @@ class EditorText extends Component {
   close = () => {};
 
   addText = () => {
-    const { text, color, fontFamliay } = this.state;
+    const { text, color, fontFamily } = this.state;
     if (!text) {
       alert("请输入文字！");
       return;
@@ -142,21 +161,116 @@ class EditorText extends Component {
       alert("请选择颜色！");
       return;
     }
-    if (!fontFamliay) {
+    if (!fontFamily) {
       alert("请选择字体！");
       return;
     }
   };
 
+  pushText = () => {
+    const { texts } = this.state;
+    this.setState({
+      texts: [
+        ...texts,
+        {
+          fill: colors[0],
+          // fontFamily,
+          text: "快来开启金魔方魔幻路程吧",
+          name: "text_" + Date.now()
+        }
+      ]
+    });
+  };
+
+  handleStageMouseDown = e => {
+    console.log(
+      e.target.name(),
+      e.target.getParent(),
+      e.target.getStage(),
+      "----------"
+    );
+
+    if (e.target === e.target.getStage()) {
+      this.setState({
+        activeKey: ""
+      });
+      return;
+    }
+
+    const clickedOnTransformer =
+      e.target.getParent().className === "Transformer";
+    if (clickedOnTransformer) {
+      return;
+    }
+
+    const name = e.target.name();
+    const t = this.state.texts.find(i => i.name === name);
+    if (t) {
+      this.setState({
+        activeKey: name
+      });
+    } else {
+      this.setState({
+        activeKey: ""
+      });
+    }
+  };
+
+  updateText = (index, newProps) => {
+    const texts = this.state.texts.concat();
+    texts[index] = {
+      ...texts[index],
+      ...newProps
+    };
+
+    this.setState({ texts });
+  };
+
+  findActiveIndex = () => {
+    const { texts, activeKey } = this.state;
+    return texts.findIndex(text => text.name === activeKey);
+  };
+
   render() {
-    const { resultUrl, color, fontFamliay } = this.state;
+    const { resultUrl, color, fontFamily, activeKey, texts, text } = this.state;
+    const stageWidth = window.innerWidth * 0.8;
+
     return (
       <div className="page">
-        <Stage imgUrl={resultUrl} />
+        <div className="body" style={s.body}>
+          <div className="stage">
+            <Cropper
+              width={stageWidth}
+              height={stageWidth}
+              selectKey={activeKey}
+              onTouchStart={this.handleStageMouseDown}
+            >
+              <Cropper.Image
+                key="backgroundImage"
+                draggable={false}
+                src={resultUrl}
+                width={stageWidth}
+              />
+              {texts.map((text, index) => (
+                <Cropper.Text
+                  {...text}
+                  fontSize={20}
+                  key={text.name + index}
+                  draggable={true}
+                />
+              ))}
+            </Cropper>
+          </div>
+        </div>
         <div className="text-root">
-          <Input onChange={this.changeText} />
+          <div className="add">
+            <span onClick={this.pushText}>
+              <img src={addTextUrl} alt="添加" />
+            </span>
+          </div>
+          <Input onChange={this.changeText} value={text} />
           <Colors onChange={this.changeColor} value={color} />
-          <Texts onChange={this.changeFontFamliay} value={fontFamliay} />
+          <Texts onChange={this.changefontFamily} value={fontFamily} />
         </div>
         <Footer>
           <Footer.CancelIcon onClick={e => this.goTo("/home")} />
@@ -170,7 +284,7 @@ class EditorText extends Component {
 
 const s = {
   body: {
-    paddingBottom: "5rem",
+    paddingBottom: "7rem",
     transition: ".2 all"
   }
 };

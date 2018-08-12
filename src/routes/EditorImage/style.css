@@ -29,6 +29,8 @@
   flex: 1;
   height: 4rem;
   overflow-x: scroll;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .upload-list ul {

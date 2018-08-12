@@ -1,5 +1,5 @@
-.page{
-    height: 100%;
+.page {
+  height: 100%;
 }
 
 .body {
@@ -11,6 +11,6 @@
 }
 
 .stage {
-  padding: 3rem 1.5rem;
+  padding: 10%;
   overflow: hidden;
 }

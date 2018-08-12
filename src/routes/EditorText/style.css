@@ -1,16 +1,33 @@
 .text-root {
   position: absolute;
   background: #222;
-  height: 5rem;
+  height: 8rem;
   bottom: 2rem;
   width: 100%;
 }
-.colors,
-.input {
-  overflow-x: scroll;
+/* .colors,
+.input,
+.texts {
   padding-top: 0.4rem;
+} */
+
+.add {
+  text-align: center;
+  background: #000;
+  padding-bottom: 1rem;
+}
+.add > span {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+}
+
+.colors {
+  padding: 0.2rem 0 0.4rem;
+  overflow-x: scroll;
   -webkit-overflow-scrolling: touch;
 }
+
 .colors li {
   width: 1rem;
   height: 1rem;
@@ -24,7 +41,7 @@
 }
 
 .texts {
-  padding-bottom: 0.4rem;
+  /* padding-bottom: 0.4rem; */
   overflow-x: scroll;
   -webkit-overflow-scrolling: touch;
 }
@@ -46,8 +63,7 @@
 
 .input {
   line-height: 0;
-  padding-left: 0.4rem;
-  padding-right: 0.4rem;
+  padding: 0.4rem;
 }
 
 .input > input {

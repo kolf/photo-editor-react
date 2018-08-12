@@ -2666,7 +2666,7 @@ fb-watchman@^2.0.0:
   dependencies:
     bser "^2.0.0"
 
-fbjs@^0.8.16:
+fbjs@^0.8.16, fbjs@^0.8.17:
   version "0.8.17"
   resolved "http://r.cnpmjs.org/fbjs/download/fbjs-0.8.17.tgz#c4d598ead6949112653d6588b01a5cdcd9f90fdd"
   dependencies:
@@ -4140,6 +4140,10 @@ klaw@^1.0.0:
   optionalDependencies:
     graceful-fs "^4.1.9"
 
+konva@^2.2.1:
+  version "2.2.1"
+  resolved "http://registry.npm.taobao.org/konva/download/konva-2.2.1.tgz#ce9241f4eb418d30c62641e904f767e8c81093e7"
+
 latest-version@^3.0.0:
   version "3.1.0"
   resolved "http://r.cnpmjs.org/latest-version/download/latest-version-3.1.0.tgz#a205383fea322b33b5ae3b18abee0dc2f356ee15"
@@ -5569,6 +5573,22 @@ react-dom@^16.4.2:
 react-error-overlay@^4.0.0:
   version "4.0.0"
   resolved "http://r.cnpmjs.org/react-error-overlay/download/react-error-overlay-4.0.0.tgz#d198408a85b4070937a98667f500c832f86bd5d4"
+
+react-konva@^1.7.12:
+  version "1.7.12"
+  resolved "http://registry.npm.taobao.org/react-konva/download/react-konva-1.7.12.tgz#962ebea931569edd1510337926e38fe8239f3066"
+  dependencies:
+    fbjs "^0.8.17"
+    react-reconciler "^0.12.0"
+
+react-reconciler@^0.12.0:
+  version "0.12.0"
+  resolved "http://registry.npm.taobao.org/react-reconciler/download/react-reconciler-0.12.0.tgz#dd3ecd98f64a2d8449298dadab041910cafd2849"
+  dependencies:
+    fbjs "^0.8.16"
+    loose-envify "^1.1.0"
+    object-assign "^4.1.1"
+    prop-types "^15.6.0"
 
 react-router-dom@^4.3.1:
   version "4.3.1"
