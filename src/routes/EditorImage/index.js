@@ -106,6 +106,17 @@ class EditorImage extends Component {
     }
   };
 
+  getImageStyle = stageWidth => {
+    const width = stageWidth * 0.8;
+    const left = stageWidth * 0.1;
+    return {
+      x: left,
+      y: left,
+      width,
+      height: width
+    };
+  };
+
   render() {
     const { resultUrl, images, selectedShapeName } = this.state;
     const stageWidth = window.innerWidth * 0.8;
@@ -131,6 +142,7 @@ class EditorImage extends Component {
                   name={image.name}
                   key={image.name + index}
                   draggable={true}
+                  width={stageWidth * 0.6}
                   src={image.src}
                 />
               ))}

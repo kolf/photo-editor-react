@@ -44,7 +44,7 @@ const colors = [
   "000000"
 ].map(c => "#" + c);
 
-const fontFamilys = ["font1", "font2", "font3", "font4", "font5"];
+const fontFamilys = ["font1", "font2", "font3", "font4", "font5", "font6"];
 
 const Colors = ({ onChange, value }) => {
   return (
