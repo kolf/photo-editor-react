@@ -1,8 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "./style.css";
+
 import okIcon from "../../assets/ok.png";
 import cancelIcon from "../../assets/cancel.png";
+
+import "./style.css";
 
 const Item = ({ path, icon, children }) => {
   return (
@@ -53,8 +55,12 @@ const CancelIcon = ({ onClick }) => {
   );
 };
 
-const Footer = ({ children }) => {
-  return <div className="footer">{children}</div>;
+const Footer = ({ children, style }) => {
+  return (
+    <div className="footer" style={style || null}>
+      {children}
+    </div>
+  );
 };
 
 Footer.Item = Item;
