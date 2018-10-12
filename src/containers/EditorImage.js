@@ -169,12 +169,10 @@ class EditorImage extends Component {
       return;
     }
 
-    const timer = setTimeout(() => {
-      clearTimeout(timer);
-      const stageJson = this.stage.getStage().toJSON();
-      localforage.setItem("stageJson", stageJson);
-      callback && callback();
-    }, 30);
+    const stageJson = this.stage.getStage().toJSON();
+    localforage.setItem("stageJson", stageJson).then(data => {
+      callback && callback(data);
+    });
   };
 
   handleTap = activeKey => {
@@ -376,7 +374,7 @@ class EditorImage extends Component {
           <Footer.OkIcon
             onClick={e =>
               this.save(e, () => {
-                Prompt.message(<span>保存成功</span>);
+                this.goTo("/photo");
               })
             }
           />

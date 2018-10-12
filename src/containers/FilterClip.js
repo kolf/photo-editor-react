@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import localforage from "localforage";
 
 import Konva from "konva";
-import { createObjectURL, canvasToBlob } from "blob-util";
+import { createObjectURL, dataURLToBlob } from "blob-util";
 import { withStyles } from "@material-ui/core/styles";
 import Slider from "@material-ui/lab/Slider";
 
@@ -41,13 +41,14 @@ class FilterClip extends Component {
   };
 
   saveStage = () => {
-    if (!this.stage) {
+    if (!this.stageRef) {
       return;
     }
 
-    canvasToBlob(this.stage.getStage(), "image/png").then(blob => {
-      localforage.setItem("imgUrl", createObjectURL(blob));
-      this.goTo(`/photo/editor-image`);
+    dataURLToBlob(this.stageRef.getStage().toDataURL()).then(blob => {
+      localforage.setItem("imgUrl", createObjectURL(blob)).then(imgUrl => {
+        this.goTo(`/photo/editor-image`);
+      });
     });
   };
 
@@ -73,7 +74,7 @@ class FilterClip extends Component {
         <div className="body">
           <div className="stage">
             <Cropper
-              stageRef={f => (this.stage = f)}
+              stageRef={f => (this.stageRef = f)}
               style={{ background: "#333" }}
               height={stageWidth}
               width={stageWidth}

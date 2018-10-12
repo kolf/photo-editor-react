@@ -584,7 +584,7 @@ class Selected extends Component {
 
 class Cropper extends Component {
   render() {
-    const { children, width, height, stageRef } = this.props;
+    const { children, width, height, stageRef, layerProps } = this.props;
     const stageProps = {
       ...this.props,
       height: height || width,
@@ -596,7 +596,7 @@ class Cropper extends Component {
 
     return (
       <Stage {...stageProps}>
-        <Layer>{children}</Layer>
+        <Layer {...layerProps}>{children}</Layer>
       </Stage>
     );
   }

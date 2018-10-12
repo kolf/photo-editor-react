@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
 import GridList from "@material-ui/core/GridList";
 import GridListTile from "@material-ui/core/GridListTile";
-import tileData from "mock/tileData";
+import tileData from "../mock/tileData";
 
 const s = theme => ({
   root: {

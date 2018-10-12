@@ -29,8 +29,9 @@ class CutClip extends Component {
     }
 
     canvasToBlob(this.drawingRef.getResult(), "image/png").then(blob => {
-      localforage.setItem("imgUrl", createObjectURL(blob));
-      this.goTo(`/photo/editor-image`);
+      localforage.setItem("imgUrl", createObjectURL(blob)).then(imgUrl => {
+        this.goTo(`/photo/editor-image`);
+      });
     });
   };
 

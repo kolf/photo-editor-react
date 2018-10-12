@@ -207,12 +207,10 @@ class EditorText extends Component {
       return;
     }
 
-    const timer = setTimeout(() => {
-      clearTimeout(timer);
-      const stageJson = this.stage.getStage().toJSON();
-      localforage.setItem("stageJson", stageJson);
-      callback && callback(stageJson);
-    }, 30);
+    const stageJson = this.stage.getStage().toJSON();
+    localforage.setItem("stageJson", stageJson).then(data => {
+      callback && callback(data);
+    });
   };
 
   handleTap = activeKey => {
@@ -401,7 +399,7 @@ class EditorText extends Component {
       });
     } else {
       this.saveStage(e, stageJson => {
-        Prompt.message(<span>保存成功</span>);
+        this.goTo("/photo");
       });
     }
   };
@@ -432,8 +430,6 @@ class EditorText extends Component {
     if (!images.length) {
       return <div className="page" />;
     }
-
-    console.log(updateKey, "updateKey");
 
     return (
       <div className="page">

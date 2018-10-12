@@ -1,13 +1,14 @@
 import React, { Component } from "react";
 import axios from "axios";
 import localforage from "localforage";
+import { createObjectURL, canvasToBlob, dataURLToBlob } from "blob-util";
+
 import { getQueryString, uid } from "../utils";
 
 import Footer from "../components/Footer";
 import Cropper from "../components/Cropper";
 
 import Transformer from "../components/Transformer";
-import Prompt from "../components/Prompt";
 
 import imageIcon from "../assets/image.gif";
 import textIcon from "../assets/text.gif";
@@ -31,12 +32,35 @@ class Home extends Component {
   state = {
     imageMap: new Map(),
     activeKey: "",
-    stageWidth: 1
+    stageWidth: 1,
+    stage: {
+      x: 0,
+      y: 0,
+      scaleX: 1,
+      scaleY: 1,
+      rotation: 0,
+      initScale: 1
+    }
   };
 
+  defaultStage = null;
+
   componentDidMount() {
+    const stageWidth = Math.min(window.innerWidth, 640) * 0.8;
+    this.defaultStage = {
+      ...this.state.stage,
+      x: stageWidth / 2,
+      y: stageWidth / 2,
+      offset: {
+        x: stageWidth / 2,
+        y: stageWidth / 2
+      }
+    };
     this.setState({
-      stageWidth: Math.min(window.innerWidth, 640) * 0.8
+      stageWidth,
+      stage: {
+        ...this.defaultStage
+      }
     });
     this.initStage();
   }
@@ -115,87 +139,86 @@ class Home extends Component {
   };
 
   onUpload = e => {
-    this.props.history.push("/photo/success");
+    this.updateStage(
+      {
+        ...this.defaultStage,
+        x: 0,
+        y: 0,
+        offset: {
+          x: 0,
+          y: 0
+        }
+      },
+      () => {
+        const blob = dataURLToBlob(this.stageRef.getStage().toDataURL());
+
+        axios
+          .post(`${API_ROOT}/mc/app/write/v1/base/img/edit/upload`, blob, {
+            headers: { "content-type": "multipart/form-data" }
+          })
+          .then(res => {
+            console.log(res, "res");
+          });
+
+        // console.log();
+        // canvasToBlob(this.stageRef, "image/png").then(blob => {
+        //   console.log(blob);
+        // });
+      }
+    );
   };
 
   handlePressMove = e => {
-    const { activeKey, imageMap } = this.state;
+    const { stage } = this.state;
 
-    if (!activeKey) {
-      return;
-    }
-
-    const image = imageMap.get(activeKey);
-
-    this.updateImage({
-      x: e.deltaX + image.x,
-      y: e.deltaY + image.y
+    this.updateStage({
+      x: e.deltaX + stage.x,
+      y: e.deltaY + stage.y
     });
   };
 
   handlePinch = e => {
-    const { activeKey, imageMap } = this.state;
+    const { stage } = this.state;
+    const scale = e.zoom * stage.initScale;
 
-    if (!activeKey) {
-      return;
-    }
-
-    const image = imageMap.get(activeKey);
-    const scale = e.zoom * image.initScale;
-
-    this.updateImage({
+    this.updateStage({
       scaleX: scale,
       scaleY: scale
     });
   };
 
   handleRotate = e => {
-    const { activeKey, imageMap } = this.state;
+    const { stage } = this.state;
 
-    if (!activeKey) {
-      return;
-    }
-
-    const image = imageMap.get(activeKey);
-    this.updateImage({
-      rotation: e.angle + image.rotation
+    this.updateStage({
+      rotation: e.angle + stage.rotation
     });
   };
 
   hanleMultipointStart = e => {
-    const { activeKey, imageMap } = this.state;
+    const { stage } = this.state;
 
-    if (!activeKey) {
-      return;
-    }
+    this.updateStage({
+      initScale: stage.scaleX || 1
+    });
+  };
 
-    const image = imageMap.get(activeKey);
-    this.updateImage(
+  updateStage = (props, callback) => {
+    this.setState(
       {
-        initScale: image.scaleX || 1
+        stage: {
+          ...this.state.stage,
+          ...props
+        }
       },
-      false
+      () => {
+        callback && callback();
+      }
     );
   };
 
-  updateImage = (props, update = true) => {
-    const { activeKey, imageMap } = this.state;
-
-    if (!activeKey) return;
-
-    const image = imageMap.get(activeKey);
-    imageMap.set(activeKey, {
-      ...image,
-      ...props
-    });
-
-    if (update) {
-      this.forceUpdate();
-    }
-  };
-
   render() {
-    const { imageMap, stageWidth } = this.state;
+    const { imageMap, stageWidth, stage } = this.state;
     const images = [...imageMap.values()];
 
     if (images.length === 0) {
@@ -213,6 +236,9 @@ class Home extends Component {
               onRotate={this.handleRotate}
             >
               <Cropper
+                layerProps={{
+                  ...stage
+                }}
                 style={{ background: "#333" }}
                 stageRef={f => (this.stageRef = f)}
                 width={stageWidth}

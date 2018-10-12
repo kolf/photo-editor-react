@@ -69,8 +69,9 @@ class Clipping extends Component {
 
   save = () => {
     getCroppedImg(this.imageObj, this.croppedAreaPixels).then(blob => {
-      localforage.setItem("imgUrl", createObjectURL(blob));
-      this.goTo("/photo/image-upload/index");
+      localforage.setItem("imgUrl", createObjectURL(blob)).then(imgUrl => {
+        this.goTo("/photo/image-upload/index");
+      });
     });
   };
 
