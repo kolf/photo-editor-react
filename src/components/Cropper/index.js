@@ -321,7 +321,6 @@ class XImage extends Component {
 
     const crossOrigin = /^http/.test(src);
     loadImage(src, crossOrigin).then(image => {
-      this.imageRef.getLayer().batchDraw();
       const { width, height } =
         maxWidth && maxHeight
           ? resizeImage(image.width, image.height, maxWidth, maxHeight)
@@ -403,6 +402,9 @@ class XText extends Component {
       this.props.fontFamily !== nextProps.fontFamily ||
       this.state.width !== nextProps.width
     ) {
+      if(!this.textRef){
+        return;
+      }
       const timer = setTimeout(() => {
         clearTimeout(timer);
         this.setRect();
@@ -420,8 +422,6 @@ class XText extends Component {
       width: newWidth,
       height: newHeight
     });
-
-    console.log(this.textRef.parent, "this.textRef");
 
     onChange &&
       onChange({
@@ -604,6 +604,7 @@ class Cropper extends Component {
 
 Cropper.Image = XImage;
 Cropper.Text = XText;
+Cropper.Rect = Rect;
 Cropper.Drawing = Drawing;
 Cropper.Clipping = Clipping;
 Cropper.Selected = Selected;

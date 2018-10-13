@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import axios from "axios";
 import localforage from "localforage";
+import request from "../../node_modules/rc-upload/lib/request";
 import { createObjectURL, canvasToBlob, dataURLToBlob } from "blob-util";
 
 import { getQueryString, uid } from "../utils";
@@ -12,6 +13,19 @@ import Transformer from "../components/Transformer";
 
 import imageIcon from "../assets/image.gif";
 import textIcon from "../assets/text.gif";
+
+const dataURLtoFile = (dataurl, filename) => {
+  const arr = dataurl.split(",");
+  const mime = arr[0].match(/:(.*?);/)[1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n) {
+    u8arr[n] = bstr.charCodeAt(n);
+    n -= 1; // to make eslint happy
+  }
+  return new File([u8arr], filename, { type: mime });
+};
 
 const API_ROOT = "http://gold.dreamdeck.cn";
 const FooterItem = Footer.Item;
@@ -28,11 +42,14 @@ const footers = [
     icon: textIcon
   }
 ];
+
 class Home extends Component {
   state = {
     imageMap: new Map(),
     activeKey: "",
     stageWidth: 1,
+    uploading: false,
+    colorId: "000000",
     stage: {
       x: 0,
       y: 0,
@@ -77,6 +94,7 @@ class Home extends Component {
 
   initStage = async () => {
     const { imageMap } = this.state;
+    const colorId = getQueryString("color");
     const stageKey = await localforage.getItem("stageKey"); // 保存并发布后清除
     let stageJson = await localforage.getItem("stageJson");
 
@@ -84,13 +102,13 @@ class Home extends Component {
       stageJson = JSON.parse(stageJson);
     }
 
-    if (stageJson && stageKey) {
+    if (stageJson) {
       const images = (stageJson.children[0] || {}).children || [];
 
       for (const { attrs } of images) {
         const key = attrs.uid;
         if (!/bg|image|text/g.test(key)) {
-          break;
+          continue;
         }
         const rotation = attrs.rotation || 0;
         imageMap.set(key, {
@@ -99,18 +117,22 @@ class Home extends Component {
           uid: key
         });
       }
-    } else {
-      const srcUrl = await this.loadScrUrl();
-      this.push({
-        src: srcUrl
-      });
+
+      // console.log(images, "images");
     }
+
     if (imageMap.size > 0) {
       this.setState(
-        { imageMap, activeKey: [...imageMap.keys()][0] },
+        { imageMap, activeKey: [...imageMap.keys()][0], colorId },
         this.saveStage
       );
+    } else {
+      this.setState({
+        colorId
+      });
     }
+
+    localforage.setItem("colorId", colorId);
   };
 
   push = ({ src }) => {
@@ -139,33 +161,42 @@ class Home extends Component {
   };
 
   onUpload = e => {
-    this.updateStage(
+    this.setState(
       {
-        ...this.defaultStage,
-        x: 0,
-        y: 0,
-        offset: {
+        stage: {
+          ...this.defaultStage,
           x: 0,
-          y: 0
-        }
+          y: 0,
+          offset: {
+            x: 0,
+            y: 0
+          }
+        },
+        uploading: true
       },
       () => {
-        const blob = dataURLToBlob(this.stageRef.getStage().toDataURL());
+        const data = new FormData();
+        const file = dataURLToBlob(this.stageRef.getStage().toDataURL());
+        data.append("imgFile", file);
 
         axios
-          .post(`${API_ROOT}/mc/app/write/v1/base/img/edit/upload`, blob, {
+          .post(`${API_ROOT}/mc/app/write/v1/base/img/edit/upload`, data, {
             headers: { "content-type": "multipart/form-data" }
           })
           .then(res => {
-            console.log(res, "res");
+            localforage.clear();
+            this.goTo("/photo/success");
+          })
+          .catch(error => {
+            localforage.clear();
+            alert("上传失败，请重试！");
           });
-
-        // console.log();
-        // canvasToBlob(this.stageRef, "image/png").then(blob => {
-        //   console.log(blob);
-        // });
       }
     );
+  };
+
+  goTo = (path, state) => {
+    this.props.history.push(path);
   };
 
   handlePressMove = e => {
@@ -179,19 +210,11 @@ class Home extends Component {
 
   handlePinch = e => {
     const { stage } = this.state;
-    const scale = e.zoom * stage.initScale;
+    const scale = Math.max(e.zoom * stage.initScale, 1);
 
     this.updateStage({
       scaleX: scale,
       scaleY: scale
-    });
-  };
-
-  handleRotate = e => {
-    const { stage } = this.state;
-
-    this.updateStage({
-      rotation: e.angle + stage.rotation
     });
   };
 
@@ -218,12 +241,8 @@ class Home extends Component {
   };
 
   render() {
-    const { imageMap, stageWidth, stage } = this.state;
+    const { imageMap, stageWidth, stage, uploading, colorId } = this.state;
     const images = [...imageMap.values()];
-
-    if (images.length === 0) {
-      return <div className="page" />;
-    }
 
     return (
       <div className="page">
@@ -233,7 +252,6 @@ class Home extends Component {
               onMultipointStart={this.hanleMultipointStart}
               onPinch={this.handlePinch}
               onPressMove={this.handlePressMove}
-              onRotate={this.handleRotate}
             >
               <Cropper
                 layerProps={{
@@ -243,6 +261,14 @@ class Home extends Component {
                 stageRef={f => (this.stageRef = f)}
                 width={stageWidth}
               >
+                {!uploading && (
+                  <Cropper.Rect
+                    name="stageColor"
+                    fill={"#" + colorId}
+                    width={stageWidth}
+                    height={stageWidth}
+                  />
+                )}
                 {images.map(image => {
                   const key = image.uid;
                   return /image|bg/.test(key) ? (

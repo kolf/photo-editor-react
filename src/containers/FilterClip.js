@@ -36,7 +36,7 @@ class FilterClip extends Component {
     });
   }
 
-  goTo = path => {
+  goTo = (path, state) => {
     this.props.history.push(path);
   };
 

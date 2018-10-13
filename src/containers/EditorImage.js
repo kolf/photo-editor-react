@@ -5,12 +5,11 @@ import localforage from "localforage";
 import Footer from "../components/Footer";
 import Cropper from "../components/Cropper";
 import Transformer from "../components/Transformer";
-import Prompt from "../components/Prompt";
 
 import uploadUrl from "../assets/upload.gif";
 import tukuUrl from "../assets/tk.png";
 
-import { uid } from "../utils";
+import { uid, isWindow } from "../utils";
 
 const API_ROOT = "http://gold.dreamdeck.cn";
 
@@ -31,13 +30,27 @@ const Thumbs = ({ items, onClick }) => {
     }
   };
 
+  const UploadBtn = (
+    <Upload {...uploadProps}>
+      <img src={uploadUrl} alt="upload" />
+    </Upload>
+  );
+
+  const linkBtn = (
+    <span
+      className="upload-btn"
+      onClick={e => {
+        onClick({ key: "upload" });
+      }}
+    >
+      <img src={uploadUrl} alt="upload" />
+    </span>
+  );
+
   return (
     <div className="upload-image-root">
       <div className="upload-box">
-        <Upload {...uploadProps}>
-          <img src={uploadUrl} alt="upload" />
-        </Upload>
-
+        {isWindow ? UploadBtn : linkBtn}
         <div className="upload-list">
           <ul style={{ width: `${3.6 * (items.length + 1)}rem` }}>
             <li key="resources" onClick={e => onClick({ key: "resources" })}>
@@ -64,6 +77,7 @@ class EditorImage extends Component {
   };
 
   index = 0;
+  colorId = "000000";
 
   componentDidMount() {
     this.state.stageWidth = Math.min(window.innerWidth, 640) * 0.8;
@@ -89,6 +103,7 @@ class EditorImage extends Component {
   initStage = async () => {
     const { imageMap } = this.state;
     const imgUrl = await localforage.getItem("imgUrl");
+    const colorId = await localforage.getItem("colorId");
     let stageJson = await localforage.getItem("stageJson");
 
     if (typeof stageJson === "string") {
@@ -100,8 +115,9 @@ class EditorImage extends Component {
 
       for (const { attrs } of images) {
         const key = attrs.uid;
+
         if (!/bg|image|text/g.test(key)) {
-          break;
+          continue;
         }
         const rotation = attrs.rotation || 0;
         imageMap.set(key, {
@@ -120,24 +136,28 @@ class EditorImage extends Component {
       });
     }
 
+    this.colorId = colorId;
     this.setState({ imageMap });
   };
 
-  goTo = path => {
+  goTo = (path, state) => {
     this.props.history.push(path);
   };
 
   handleThumbClick = ({ key, url }) => {
     const { stageWidth, imageMap } = this.state;
     if (key === "upload") {
-      localforage.setItem("imgUrl", url).then(url => {
-        this.goTo(`/photo/image-upload/clipping`);
-        this.save();
-      });
+      if (url) {
+        this.goTo(`/photo/image-upload/clipping?imgUrl=${url}`);
+      } else {
+        this.goTo("/photo/upload");
+      }
+
+      this.saveStage();
       return;
     } else if (key === "resources") {
       this.goTo(`/photo/resources`);
-      this.save();
+      this.saveStage();
       return;
     }
 
@@ -160,7 +180,7 @@ class EditorImage extends Component {
     this.setState({ imageMap });
   };
 
-  save = (e, callback) => {
+  saveStage = (e, callback) => {
     this.setState({
       activeKey: ""
     });
@@ -320,10 +340,6 @@ class EditorImage extends Component {
       (image1, image2) => image1.index - image2.index
     );
 
-    if (!images.length) {
-      return <div className="page" />;
-    }
-
     return (
       <div className="page">
         <div className="body" style={s.body}>
@@ -335,28 +351,29 @@ class EditorImage extends Component {
               onRotate={this.handleRotate}
             >
               <Cropper
-                style={{ background: "#333" }}
+                style={{ backgroundColor: "#" + this.colorId }}
                 stageRef={f => (this.stage = f)}
                 width={stageWidth}
               >
-                {images.map(image => {
-                  const key = image.uid;
-                  return /image|bg/.test(key) ? (
-                    <Cropper.Image
-                      onChange={props => this.changeImage(key, props)}
-                      onTouchStart={e => this.handleTap(key)}
-                      key={key}
-                      {...image}
-                      center
-                    />
-                  ) : (
-                    <Cropper.Text
-                      onTouchStart={e => this.handleTap(key)}
-                      key={key}
-                      {...image}
-                    />
-                  );
-                })}
+                {images.length > 0 &&
+                  images.map(image => {
+                    const key = image.uid;
+                    return /image|bg/.test(key) ? (
+                      <Cropper.Image
+                        onChange={props => this.changeImage(key, props)}
+                        onTouchStart={e => this.handleTap(key)}
+                        key={key}
+                        {...image}
+                        center
+                      />
+                    ) : (
+                      <Cropper.Text
+                        onTouchStart={e => this.handleTap(key)}
+                        key={key}
+                        {...image}
+                      />
+                    );
+                  })}
                 {activeKey ? (
                   <Cropper.Selected
                     {...this.getSelectdProps()}
@@ -369,12 +386,14 @@ class EditorImage extends Component {
         </div>
         <Thumbs items={thumbs} onClick={this.handleThumbClick} />
         <Footer>
-          <Footer.CancelIcon onClick={e => this.goTo("/photo")} />
+          <Footer.CancelIcon
+            onClick={e => this.goTo("/photo?color=" + this.colorId)}
+          />
           <Footer.Title>图片</Footer.Title>
           <Footer.OkIcon
             onClick={e =>
-              this.save(e, () => {
-                this.goTo("/photo");
+              this.saveStage(e, () => {
+                this.goTo("/photo?color=" + this.colorId);
               })
             }
           />
