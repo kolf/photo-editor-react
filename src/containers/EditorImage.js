@@ -50,7 +50,7 @@ const Thumbs = ({ items, onClick }) => {
   return (
     <div className="upload-image-root">
       <div className="upload-box">
-        {isWindow ? UploadBtn : linkBtn}
+        {linkBtn}
         <div className="upload-list">
           <ul style={{ width: `${3.6 * (items.length + 1)}rem` }}>
             <li key="resources" onClick={e => onClick({ key: "resources" })}>
