@@ -15,10 +15,8 @@ import FilterClip from "./containers/FilterClip";
 import CutClip from "./containers/CutClip";
 import Resources from "./containers/Resources";
 import Success from "./containers/Success";
+import Upload from "./containers/Upload";
 
-const Root = () => {
-  return <div className="App" />;
-};
 class App extends Component {
   render() {
     return (
@@ -37,6 +35,7 @@ class App extends Component {
             <Route path="/photo/image-upload/cut-clip" component={CutClip} />
             <Route path="/photo/resources" component={Resources} />
             <Route path="/photo/success" component={Success} />
+            <Route path="/photo/upload" component={Upload} />
           </Switch>
         </div>
       </Router>
