@@ -8,6 +8,7 @@
     "@material-ui/lab": "^3.0.0-alpha.18",
     "amfe-flexible": "^2.2.1",
     "axios": "^0.18.0",
+    "base64-image-upload": "^1.1.4",
     "blob-util": "^2.0.2",
     "konva": "^2.4.0",
     "localforage": "^1.7.2",

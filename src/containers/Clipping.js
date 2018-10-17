@@ -5,6 +5,7 @@ import { createObjectURL, canvasToBlob } from "blob-util";
 import ReactCrop from "react-easy-crop";
 import Footer from "../components/Footer";
 import { loadImage } from "../components/Cropper/utils";
+import {getQueryString} from '../utils'
 
 function getCroppedImg(image, pixelCrop) {
   const canvas = document.createElement("canvas");
@@ -38,7 +39,7 @@ class Clipping extends Component {
   croppedAreaPixels = null;
 
   async componentDidMount() {
-    const imgUrl = await localforage.getItem("imgUrl");
+    const imgUrl = await getQueryString("imgUrl");
     const width = Math.min(window.innerWidth, 640);
 
     loadImage(imgUrl, "image/png").then(image => {
@@ -63,7 +64,7 @@ class Clipping extends Component {
     this.setState({ zoom });
   };
 
-  goTo = path => {
+  goTo = (path, state) => {
     this.props.history.push(path);
   };
 

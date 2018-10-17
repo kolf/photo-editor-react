@@ -4,7 +4,6 @@ import localforage from "localforage";
 import Footer from "../components/Footer";
 import Cropper from "../components/Cropper";
 import Transformer from "../components/Transformer";
-import Prompt from "../components/Prompt";
 import { uid } from "../utils";
 import addTextUrl from "../assets/addText.png";
 
@@ -138,6 +137,7 @@ class EditorText extends Component {
   };
 
   index = 0;
+  colorId = "000000";
 
   componentDidMount() {
     this.state.stageWidth = Math.min(window.innerWidth, 640) * 0.8;
@@ -146,6 +146,7 @@ class EditorText extends Component {
 
   initStage = async () => {
     const { imageMap } = this.state;
+    const colorId = await localforage.getItem("colorId");
     let stageJson = await localforage.getItem("stageJson");
 
     if (typeof stageJson === "string") {
@@ -158,7 +159,7 @@ class EditorText extends Component {
       for (const { attrs } of images) {
         const key = attrs.uid;
         if (!/bg|image|text/g.test(key)) {
-          break;
+          continue;
         }
         const rotation = attrs.rotation || 0;
         imageMap.set(key, {
@@ -170,10 +171,11 @@ class EditorText extends Component {
       }
     }
 
+    this.colorId = colorId;
     this.setState({ imageMap });
   };
 
-  goTo = path => {
+  goTo = (path, state) => {
     this.props.history.push(path);
   };
 
@@ -250,7 +252,7 @@ class EditorText extends Component {
     }
 
     const image = imageMap.get(activeKey);
-    const scale = e.zoom * image.initScale;
+    const scale = Math.max(Math.min(4, image.initScale * e.scale), 0.5);
 
     this.updateImage({
       scaleX: scale,
@@ -370,7 +372,7 @@ class EditorText extends Component {
   onCancel = e => {
     const { textStatus } = this.state;
     if (!textStatus) {
-      this.goTo("/photo");
+      this.goTo("/photo?color=" + this.colorId);
     } else {
       this.setState({ textStatus: "" });
     }
@@ -399,7 +401,7 @@ class EditorText extends Component {
       });
     } else {
       this.saveStage(e, stageJson => {
-        this.goTo("/photo");
+        this.goTo("/photo?color=" + this.colorId);
       });
     }
   };
@@ -427,10 +429,6 @@ class EditorText extends Component {
       (image1, image2) => image1.index - image2.index
     );
 
-    if (!images.length) {
-      return <div className="page" />;
-    }
-
     return (
       <div className="page">
         <div className="body" style={s.body}>
@@ -443,7 +441,7 @@ class EditorText extends Component {
               onDoubleTap={this.handleDbTap}
             >
               <Cropper
-                style={{ background: "#333" }}
+                style={{ background: "#" + this.colorId }}
                 stageRef={f => (this.stage = f)}
                 width={stageWidth}
               >

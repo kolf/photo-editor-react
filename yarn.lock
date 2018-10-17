@@ -1627,6 +1627,12 @@ balanced-match@^1.0.0:
   version "1.0.0"
   resolved "http://r.cnpmjs.org/balanced-match/download/balanced-match-1.0.0.tgz#89b4d199ab2bee49de164ea02b89ce462d71b767"
 
+base64-image-upload@^1.1.4:
+  version "1.1.4"
+  resolved "http://registry.npm.taobao.org/base64-image-upload/download/base64-image-upload-1.1.4.tgz#94cdb14d726c74215f7416808261d08382be175c"
+  dependencies:
+    request ">=2.79.0"
+
 base64-js@^1.0.2:
   version "1.3.0"
   resolved "http://r.cnpmjs.org/base64-js/download/base64-js-1.3.0.tgz#cab1e6118f051095e58b5281aea8c1cd22bfc0e3"
@@ -7604,7 +7610,7 @@ request-promise-native@^1.0.5:
     stealthy-require "^1.1.0"
     tough-cookie ">=2.3.3"
 
-request@^2.87.0, request@^2.88.0:
+request@>=2.79.0, request@^2.87.0, request@^2.88.0:
   version "2.88.0"
   resolved "https://registry.yarnpkg.com/request/-/request-2.88.0.tgz#9c2fca4f7d35b592efe57c7f0a55e81052124fef"
   dependencies:
